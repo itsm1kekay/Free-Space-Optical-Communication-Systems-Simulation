@@ -8,7 +8,7 @@
     %
     % Note: the ook modulation - demodulation function appears to be 
     % broken. It runs but gives higher ber than expected.
-    function [text_output, demodulated_signal]=receiver_function(demodulation, through_channel_noisy,carrier_frequency)
+    function [text_output, demodulated_signal]=receiver(demodulation, through_channel_noisy,carrier_frequency)
     filteredSignal = fft_filtering(through_channel_noisy);
 
     switch demodulation
@@ -16,6 +16,8 @@
         demodulated_signal = ook_demodulation(filteredSignal,carrier_frequency);
     case "QPSK"
         demodulated_signal = pskdemod(filteredSignal,4,pi/4);
+    case "16 QAM"
+        demodulated_signal=qamdemod(filteredSignal,16);
     otherwise 
         demodulated_signal = filteredSignal;
     end

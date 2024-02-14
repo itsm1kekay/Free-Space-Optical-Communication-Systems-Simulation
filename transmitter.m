@@ -8,13 +8,15 @@
 %
 % Note: my ook modulation function appears to be broken for some
 % reason. It runs but it gives higher ber than expected.
-function [modulated, binary_text]= transmitter_function(modulation, text_input, carrier_frequency)
+function [modulated, binary_text]= transmitter(modulation, text_input, carrier_frequency)
 
     binary_text = textToBinary(text_input); % ascii to binary conversion
     
     switch modulation
     case "OOK"
         modulated = ook_modulation(binary_text,carrier_frequency);
+    case "16 QAM"
+        modulated = qammod(binary_text,16);
     case "QPSK"
         % modulated= qpsk_modulation(binary_text,carrier_frequency);
         modulated = pskmod(binary_text,4,pi/4);
