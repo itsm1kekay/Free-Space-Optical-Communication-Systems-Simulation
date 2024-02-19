@@ -9,10 +9,10 @@
 % when running the script locally (not through the app). Haven't found
 % a way to subplot into the gui.
 
-
-function ber_ratio= analytics(demodulated_signal ,binary_text)
-    [~,ber_ratio] = biterr(demodulated_signal ,binary_text);
+function ber_ratio= analytics(thresholded_signal ,binary_text)
+    [~,ber_ratio] = biterr(thresholded_signal ,binary_text);
     % plotter(through_channel,demodulated_signal)
+    
 end
 
 % ------------- Analytics ------------- %

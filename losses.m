@@ -19,14 +19,14 @@ function total_losses = losses(transmission_location,Apperture,beam_divergence,l
             PointErr=pointing_error(misaligment,link_length);
 
         case "Ground only"
-            atm_atten=atmosperic_attenuation(link_length,atm_conditions);             
+            atm_atten=atmosperic_attenuation(link_length,atm_conditions,"KRUSE",wavelength);             
             scint=scintillation("NME VI"); % scintillation model: New Model Equation 5
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
 
         case "Ground via sat relay"
-            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions);
+            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,LEO_distance);
@@ -40,7 +40,7 @@ function total_losses = losses(transmission_location,Apperture,beam_divergence,l
             GML = 2* GML; 
 
         otherwise                           % Cosmic Space from earth
-            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions);
+            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
             GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
@@ -60,22 +60,53 @@ end
 function GML= geometrical_losses(Apperture,beam_divergence,link_length)
     GML=10*log10(4*Apperture/pi*(beam_divergence*link_length)^2);
 end
-function atm_atten=atmosperic_attenuation(link_length,atm_conditions)
+function atm_atten=atmosperic_attenuation(link_length,atm_conditions,model)
     switch atm_conditions
         % need to add a.k,R values 
-        case "Clear Skies"
-        case "Light Rain (<2.5 mm/hr)"
-        case "Medium Rain (2.7 to 7.5 mm/hr)"
-        case "Heavy Rain (7.6 to 50 mm/hr)"
-        case "Violent Rain (>50 mm/hr)"
-        case "Light Haze"
-        case "Haze"
-        case "Thin Fog"
-        case "Moderate Fog"
-        case "Thick Fog"
-        case "Dense Fog"
+        case "Very clear air"
+            % visibillity = 
+        case "Clear air"
+            % visibillity = 
+        case "Very light mist"
+            % visibillity = 
+        case "Light mist"
+            % visibillity = 
+        case "Very light log"
+            % visibillity = 
+        case "Light fog"
+            % visibillity = 
+        case "Moderate fog"
+            % visibillity = 
+        case "Thick fog"
+            % visibillity = 
+        case "Dense fog"
+            % visibillity = 
     end
-    atm_atten=kappa_atm*Rain_intensity^alpha_atm;
+    switch model
+        case "KIM"
+            if visibility>=50
+                q=1.6;
+            elseif visibility<50 && visibility>6
+                q=1.3;
+            elseif visibility<=6 && visibility>1
+                q=0.16*visibility+ 0.34;
+            elseif visibility<=1 && visibility>0.5
+                q=visibility-0.5;
+            elseif visibility <=0.5
+                q=0;
+            end
+        case "KRUSE"
+            if visibility>=50
+                q=1.6;
+            elseif visibility <50 && visibility>6
+                q=1.3;
+            elseif visibility<=6
+                q=0.585*(visibility^(1/3));
+            end
+    end
+    scattering_coefficient=(3.91/visibility)*((wavelength/550)^(-q)); %in dB/km
+    atm_atten=scattering_coefficient*link_length;
+    % atm_atten=kappa_atm*Rain_intensity^alpha_atm;
 end
 
 function PointErr=pointing_error(misaligment,link_length)
@@ -117,7 +148,7 @@ function scint=scintillation(scintillation_model,LEO_distance,wavelength)
     elseif spherical_plane==1 
         kappa =0.5;
     end
-    si2 = kappa*cn2*((2*pi/wavelength)^7/6)*(LEO_distance)^11/6; 
+    si2 = kappa*cn2*((2*pi/wavelength)^(7/6))*(LEO_distance)^(11/6); 
     scint = 10*log10(si2);
 end
 % ---------------------------------------------- %
