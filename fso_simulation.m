@@ -14,12 +14,10 @@ function [text_output,ber_ratio,snr,total_losses] = fso_simulation(text_input,wa
     [modulated, binary_text]= transmitter(modulation,text_input,carrier_frequency,av_transmitted_power,BR);
     
     % ---------------------------------------------------------------------
-    % section 3.1 - channel
-    [through_channel_noisy,snr] = channel(modulated);
-
-    % ---------------------------------------------------------------------
-    % section 3.2 - losses
-    total_losses = losses(transmission_location,Apperture,beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength);
+    % section 3 - channel
+    [through_channel_noisy,snr, total_losses] = channel(modulated, ...
+    transmission_location,Apperture,beam_divergence, ...
+    link_length,LEO_distance,misaligment,atm_conditions,wavelength);
 
     % ---------------------------------------------------------------------
     % section 4 - receiver side   

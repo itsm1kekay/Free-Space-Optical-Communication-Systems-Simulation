@@ -2,14 +2,15 @@
 
 
 % ---------------------------------------------------------------------
-% section 3.2 - losses in channel
+% section 3.1 - losses in channel
 % 
 % convert to binary and modulate to transmit
 %
 % Note: my ook modulation function appears to be broken for some
 % reason. It runs but it gives higher ber than expected.
 
-function total_losses = losses(transmission_location,Apperture,beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
+function total_losses = losses(transmission_location,Apperture, ...
+beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
         switch transmission_location
         case "Cosmic space only"
             atm_atten=0; 
@@ -20,7 +21,7 @@ function total_losses = losses(transmission_location,Apperture,beam_divergence,l
 
         case "Ground only"
             atm_atten=atmosperic_attenuation(link_length,atm_conditions,"KRUSE",wavelength);             
-            scint=scintillation("NME VI"); % scintillation model: New Model Equation 5
+            scint=scintillation("NME VI",link_length,wavelength); % scintillation model: New Model Equation 5
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
@@ -60,7 +61,7 @@ end
 function GML= geometrical_losses(Apperture,beam_divergence,link_length)
     GML=10*log10(4*Apperture/pi*(beam_divergence*link_length)^2);
 end
-function atm_atten=atmosperic_attenuation(link_length,atm_conditions,model)
+function atm_atten=atmosperic_attenuation(link_length,atm_conditions,model,wavelength)
     switch atm_conditions
         % need to add a.k,R values 
         case "Very clear air"
@@ -71,7 +72,7 @@ function atm_atten=atmosperic_attenuation(link_length,atm_conditions,model)
             % visibillity = 
         case "Light mist"
             % visibillity = 
-        case "Very light log"
+        case "Very light fog"
             % visibillity = 
         case "Light fog"
             % visibillity = 
@@ -119,10 +120,10 @@ function TurbEff=turbulence_effect()
     TurbEff=0;
 end
 
-function scint=scintillation(scintillation_model,LEO_distance,wavelength)
+function scint=scintillation(scintillation_model,link_length,wavelength)
     switch scintillation_model
         case "HV"
-            cn2 = exp(-LEO_distance/1000) + (2.7e-16)*exp(LEO_distance/1500);
+            cn2 = exp(-link_length/1000) + (2.7e-16)*exp(link_length/1500);
         case "NME VI"
             %       RH  -   relative humidity in %
             %       T   -   Temperature in C°
@@ -148,7 +149,7 @@ function scint=scintillation(scintillation_model,LEO_distance,wavelength)
     elseif spherical_plane==1 
         kappa =0.5;
     end
-    si2 = kappa*cn2*((2*pi/wavelength)^(7/6))*(LEO_distance)^(11/6); 
+    si2 = kappa*cn2*((2*pi/wavelength)^(7/6))*(link_length)^(11/6); 
     scint = 10*log10(si2);
 end
 % ---------------------------------------------- %
