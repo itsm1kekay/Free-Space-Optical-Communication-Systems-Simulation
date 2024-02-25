@@ -1,4 +1,4 @@
-function [text_output,ber_ratio,snr,total_losses] = fso_simulation(text_input,wavelength,modulation,transmission_location,link_length,BR,Apperture,beam_divergence,atm_conditions,misaligment,av_transmitted_power)
+function [text_output,ber_ratio,snr,total_losses,thresholded_signal,binary_text] = fso_simulation(text_input,wavelength,modulation,transmission_location,link_length,BR,Apperture,beam_divergence,atm_conditions,misaligment,av_transmitted_power)
     % ---------------------------------------------------------------------
     % section 1 - setup
     carrier_frequency= 3e8/wavelength;
@@ -29,6 +29,10 @@ function [text_output,ber_ratio,snr,total_losses] = fso_simulation(text_input,wa
     % section 5 - analytics
     ber_ratio = analytics(thresholded_signal ,binary_text);
     disp(['Ber is: ' ber_ratio]);
+    
+    % ---------------------------------------------------------------------
+    % section 6 - MonteCarlo
+    % monte_carlo(thresholded_signal,binary_text);
 end
 
 % ------------------------------ Functions ------------------------------ %

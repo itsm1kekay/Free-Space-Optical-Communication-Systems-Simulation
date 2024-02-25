@@ -13,15 +13,18 @@ transmission_location,Apperture,beam_divergence, link_length,LEO_distance, ...
 misaligment,atm_conditions,wavelength)
 % ---------------------------------------------------------------------
 % section 3.2 - losses
-    total_losses = losses(transmission_location,Apperture,beam_divergence, ...
+    [total_losses,scattering_coefficient] = losses(transmission_location,Apperture,beam_divergence, ...
     link_length,LEO_distance,misaligment,atm_conditions,wavelength);
 % ---------------------------------------------------------------------   
-    if attenuation_coefficient <= 0.5 % weak turbulence
+    if scattering_coefficient <= 0.5 % weak turbulence
         % negative exponential distribution
-    elseif attenuation_coefficient > 0.5 && attenuation_coefficient <= 5 % medium-strong turbulence
-        % log normal distribution
-    elseif attenuation_coefficient > 5 && attenuation_coefficient <= 25 % strong turbulence - saturation
-        % gamma gamma distribution
+        
+    elseif scattering_coefficient > 0.5 && scattering_coefficient <= 5 % medium-strong turbulence
+        % log normal distribution --more important!
+        
+    elseif scattering_coefficient > 5 && scattering_coefficient <= 25 % strong turbulence - saturation
+        % gamma gamma distribution --- gamrnd(x,y).*gamrd(x1,y1)
+        
     end
     % h1 = randi([0,1],1,length(modulated));
     % through_channel = h1*modulated;

@@ -9,31 +9,31 @@
 % Note: my ook modulation function appears to be broken for some
 % reason. It runs but it gives higher ber than expected.
 
-function total_losses = losses(transmission_location,Apperture, ...
+function [total_losses, scattering_coefficient] = losses(transmission_location,Apperture, ...
 beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
         switch transmission_location
         case "Cosmic space only"
-            atm_atten=0; 
+            atm_atten=0;
+            scattering_coefficient=0;
             scint=0; % case of insterstellar scintillation????
             TurbEff=0; 
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
 
         case "Ground only"
-            atm_atten=atmosperic_attenuation(link_length,atm_conditions,"KRUSE",wavelength);             
+            [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,atm_conditions,"KRUSE",wavelength);             
             scint=scintillation("NME VI",link_length,wavelength); % scintillation model: New Model Equation 5
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
 
         case "Ground via sat relay"
-            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
+            [atm_atten, scattering_coefficient]=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             PointErr1=pointing_error(misaligment,LEO_distance);
-            PointErr1=pointing_error(misaligment,LEO_distance);
-
+            PointErr2=pointing_error(misaligment,LEO_distance);
             % for round trip
             atm_atten= 2* atm_atten;    
             TurbEff= 2* TurbEff;    
@@ -41,13 +41,13 @@ beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
             GML = 2* GML; 
 
         otherwise                           % Cosmic Space from earth
-            atm_atten=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
+            [atm_atten, scattering_coefficient]=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
             GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             GML2=geometrical_losses(Apperture,beam_divergence,(link_length-LEO_distance));
             PointErr1=pointing_error(misaligment,LEO_distance);
-            PointErr1=pointing_error(misaligment,(link_length - LEO_distance));
+            PointErr2=pointing_error(misaligment,(link_length - LEO_distance));
 
             % for whole trip
             GML= GML1 + GML2; 
@@ -61,27 +61,27 @@ end
 function GML= geometrical_losses(Apperture,beam_divergence,link_length)
     GML=10*log10(4*Apperture/pi*(beam_divergence*link_length)^2);
 end
-function atm_atten=atmosperic_attenuation(link_length,atm_conditions,model,wavelength)
+function [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,atm_conditions,model,wavelength)
     switch atm_conditions
         % need to add a.k,R values 
         case "Very clear air"
-            % visibillity = 
+            visibility = 23;
         case "Clear air"
-            % visibillity = 
+            visibility = 18;
         case "Very light mist"
-            % visibillity = 
+            visibility = 5.9;
         case "Light mist"
-            % visibillity = 
+            visibility = 2.8;
         case "Very light fog"
-            % visibillity = 
+            visibility = 1.45;
         case "Light fog"
-            % visibillity = 
+            visibility = 0.635;
         case "Moderate fog"
-            % visibillity = 
+            visibility = 0.35;
         case "Thick fog"
-            % visibillity = 
+            visibility = 0.125;
         case "Dense fog"
-            % visibillity = 
+            visibility = 0.025;
     end
     switch model
         case "KIM"
@@ -144,11 +144,12 @@ function scint=scintillation(scintillation_model,link_length,wavelength)
                 -0.000335601*(T^2)*(RH^2)+7.60425e-6*(RH^3)*Ws ...
                 -6.82247e-5*(RH^3)*T+1.65979e-6*(RH^4));
     end 
-    if gaussian_plane==1
-        kappa =1.23;
-    elseif spherical_plane==1 
-        kappa =0.5;
-    end
+    % if gaussian_plane==1
+    %     kappa =1.23;
+    % elseif spherical_plane==1 
+    %     kappa =0.5;
+    % end
+    kappa = 1.23;
     si2 = kappa*cn2*((2*pi/wavelength)^(7/6))*(link_length)^(11/6); 
     scint = 10*log10(si2);
 end
