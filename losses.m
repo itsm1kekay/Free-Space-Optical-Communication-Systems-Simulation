@@ -12,7 +12,7 @@
 function [total_losses, scattering_coefficient] = losses(transmission_location,Apperture, ...
 beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
         switch transmission_location
-        case "Cosmic space only"
+        case "Cosmic Space only"
             atm_atten=0;
             scattering_coefficient=0;
             scint=0; % case of insterstellar scintillation????
@@ -105,7 +105,7 @@ function [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,
                 q=0.585*(visibility^(1/3));
             end
     end
-    scattering_coefficient=(3.91/visibility)*((wavelength/550)^(-q)); %in dB/km
+    scattering_coefficient=(3.91/visibility)*((wavelength/550e-9)^(-q)); %in dB/km
     atm_atten=scattering_coefficient*link_length;
     % atm_atten=kappa_atm*Rain_intensity^alpha_atm;
 end

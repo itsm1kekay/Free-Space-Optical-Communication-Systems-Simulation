@@ -15,10 +15,10 @@ function [modulated, binary_text]= transmitter(modulation, text_input, carrier_f
     case "OOK"
         modulated = ook_modulation(binary_text,carrier_frequency,av_transmitted_power,BR);
     case "16 QAM"
-        modulated = qammod(square_wave,16);
+        modulated = av_transmitted_power*qammod(square_wave,16,UnitAveragePower=true);
     case "QPSK"
         % modulated= qpsk_modulation(binary_text,carrier_frequency);
-        modulated = pskmod(binary_text,4,pi/4);
+        modulated = av_transmitted_power*pskmod(binary_text,4,pi/4);
         otherwise                                                          % no modulation
         modulated = binary_text;
     end

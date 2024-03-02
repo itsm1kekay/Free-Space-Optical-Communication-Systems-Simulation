@@ -9,42 +9,55 @@
 % I'm still figuring them out
 
 function [through_channel_noisy,snr, total_losses] = channel(modulated, ...
-transmission_location,Apperture,beam_divergence, link_length,LEO_distance, ...
-misaligment,atm_conditions,wavelength)
+transmission_location,Apperture,beam_divergence, link_length, ...
+LEO_distance, misaligment,atm_conditions,wavelength, ...
+av_transmitted_power,BW)
 % ---------------------------------------------------------------------
-% section 3.2 - losses
+% section 3.1 - losses
     [total_losses,scattering_coefficient] = losses(transmission_location,Apperture,beam_divergence, ...
     link_length,LEO_distance,misaligment,atm_conditions,wavelength);
-% ---------------------------------------------------------------------   
+% ---------------------------------------------------------------------
+% section 3.2 - distributions
+% ---------------------------------------------------------------------
+
     if scattering_coefficient <= 0.5 % weak turbulence
-        % negative exponential distribution
-        
+        % --------------------------------negative exponential distribution
+        through_channel=modulated;
     elseif scattering_coefficient > 0.5 && scattering_coefficient <= 5 % medium-strong turbulence
-        % log normal distribution --more important!
-        
+        % ------------------------------------------log normal distribution
+        mean=1;
+        variance=2;
+        mu=log((mean^2)/sqrt(variance+mean^2));
+        sigma = sqrt(log(variance/(mean^2)+1));
+        r = lognrnd(mu,sigma,[1 length(modulated)]);
+        through_channel=modulated+r;
     elseif scattering_coefficient > 5 && scattering_coefficient <= 25 % strong turbulence - saturation
-        % gamma gamma distribution --- gamrnd(x,y).*gamrd(x1,y1)
+        % -----------------------------------------gamma gamma distribution
+        % gamrnd(x,y).*gamrd(x1,y1)
+        through_channel=modulated;
         
     end
-    % h1 = randi([0,1],1,length(modulated));
-    % through_channel = h1*modulated;
-    through_channel= modulated;
-    % Channel noise
-    through_channel_noisy = awgn(through_channel,10,'measured');
-    noise = through_channel_noisy-through_channel;
-    snr=power_and_snr(through_channel,noise);
+    % ---------------------------------------------------------------------
+    % section 3.3 noises
+    % constants------------------------------------------------------------
+    h = 6.626e-34;                                                          % Planck's constant
+    elemental_charge = 1.60217663e-19;                                      % elemental charge (in Coulombs)
+    boltzman_constant= 1.380649e-23;
+    % ---------------------------------------------------------------------
+    % receiver characteristics---------------------------------------------
+    temperature= 350; %typical value - should make conditional select
+    quantum_efficiency=0.95; %should find typical values
+    photodiode_responsivity= quantum_efficiency*elemental_charge/(h*3e8/wavelength);
+    receiver_resistance=50; %typical value
+    % ---------------------------------------------------------------------
+    % noises---------------------------------------------------------------
+    noise_bandwidth = BW; % how is this defined? i've used bw=rb/log2(m)
+    shot_noise=2*elemental_charge*photodiode_responsivity*av_transmitted_power*noise_bandwidth; % transmitted power or received?
+    thermal_noise=4*boltzman_constant*temperature*noise_bandwidth/receiver_resistance;
+    dark_current_noise=0;
+    total_noise=shot_noise+thermal_noise+dark_current_noise;
+    % ---------------------------------------------------------------------
+    irradiance=photodiode_responsivity*av_transmitted_power;
+    snr= (irradiance^2)/(total_noise);
+    through_channel_noisy = awgn(through_channel,snr,'measured');
 end 
-
-
-% ------------- Channel Characteristics ------------- %
-% --------------------------------------------------- %
-
-
-% temporarily leaving this here:
-
-function snr = power_and_snr(through_channel_noisy,noise)
-    through_channel_noisy_power_db = pow2db(mean(abs(through_channel_noisy).^2));
-    noise_power_db = pow2db(mean(abs(noise).^2));
-    snr = through_channel_noisy_power_db-noise_power_db;
-    snr=mean(snr);
-end

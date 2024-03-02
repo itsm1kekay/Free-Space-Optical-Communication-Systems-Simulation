@@ -8,23 +8,25 @@
     %
     % Note: the ook modulation - demodulation function appears to be 
     % broken. It runs but gives higher ber than expected.
-    function [text_output, thresholded_signal]=receiver(demodulation,through_channel_noisy,carrier_frequency,BR)
-    
+    function [text_output, thresholded_signal]=receiver(demodulation,through_channel_noisy,BR,av_transmitted_power)
+
     switch demodulation
     case "OOK"
-        demodulated_signal = ook_demodulation(through_channel_noisy,carrier_frequency,BR);
+        demodulated_signal = ook_demodulation(through_channel_noisy,BR);
+        filteredSignal=fft_filtering(demodulated_signal);
+        thresholded_signal = threshold(filteredSignal);
     case "QPSK"
         demodulated_signal = pskdemod(through_channel_noisy,4,pi/4);
+        thresholded_signal = threshold(demodulated_signal);
     case "16 QAM"
         demodulated_signal = qamdemod(through_channel_noisy,16);
+        filteredSignal = fft_filtering(demodulated_signal);
+        thresholded_signal = threshold(filteredSignal);
         otherwise                                                          % no demodulation
         demodulated_signal = through_channel_noisy;
+        filteredSignal = fft_filtering(demodulated_signal);
+        thresholded_signal = threshold(filteredSignal);
     end
-    
-    filteredSignal = fft_filtering(demodulated_signal);
-    
-    thresholded_signal = threshold(demodulated_signal);
-    
     text_output = binaryToText(thresholded_signal);
 end
 
@@ -40,24 +42,23 @@ end
 % --------------------------------------- %
 % ------------- Filtering ------------- %
 function filteredSignal = fft_filtering(demodulated_signal)
-    n=length(demodulated_signal);
-    fhat=fft(demodulated_signal,n);
-    PSD=fhat.*conj(fhat)/n;
+    fhat=fft(demodulated_signal,length(demodulated_signal));
+    PSD=fhat.*conj(fhat)/length(demodulated_signal);
     indices= PSD>0.15;
     fhat=indices.*fhat;
-    filteredSignal=ifft(fhat);
+    filteredSignal=ifft(fhat); 
+    % y=.15*ones(1,length(demodulated_signal));
+    % plot(PSD);
+    % hold on;
+    % plot(y);
+    % hold off;
 end
 % ------------------------------------- %
 % ----------- Thresholding ------------ %
 function thresholded_signal= threshold(filteredSignal)
-    threshold_value= max(filteredSignal)/2;
+    threshold_value= max(peak2peak(filteredSignal))/2;
     thresholded_signal=zeros(1,length(filteredSignal));
     for i=1:length(filteredSignal)
-        % if demodulated_signal(i) >= threshold_value
-        %     demodulated_signal(i) = 1;
-        % elseif demodulated_signal(i) < threshold_value
-        %     demodulated_signal(i)=0;
-        % end
         if filteredSignal(i)>=threshold_value
             thresholded_signal(i)=1;
         else
@@ -68,14 +69,18 @@ function thresholded_signal= threshold(filteredSignal)
 end
 % ------------------------------------- %
 % ------------- Demodulations ------------- %
-function demodulatedSignal = ook_demodulation(through_channel_noisy,carrier_frequency,BR)
-    % t = 0:1/BR:(length(filteredSignal)-1)/BR;
-    % matchedFilter = 0.2*cos(2 * pi * carrier_frequency * t);
-    % % demodulatedSignal = abs(conv(filteredSignal, fliplr(matchedFilter), 'same'));
-    % demodulatedSignal = abs(conv(filteredSignal, matchedFilter, 'same'));
-    % % threshold = max(demodulatedSignal) / 2; 
-    % % demodulatedSignal = demodulatedSignal > threshold;
-    demodulatedSignal = abs(hilbert(through_channel_noisy));
-    
+function demodulatedSignal = ook_demodulation(through_channel_noisy,BR)
+    % -------------------------------------------------------------attempt1
+    % t = 0:1/BR:(length(through_channel_noisy)-1)/BR;
+    % matchedFilter = fft(cos(2 * pi * carrier_frequency * t));
+    % demodulatedSignal = abs(conv(through_channel_noisy, fliplr(matchedFilter), 'same'));
+    % -------------------------------------------------------------attempt2
+    through_channel_noisy_FD = fft(through_channel_noisy);
+    demodulatedSignal=ifft(conj(through_channel_noisy_FD).*through_channel_noisy_FD);
+    % demodulatedSignal = max(matched_filter_output) / 2; 
+    % demodulatedSignal = demodulatedSignal > threshold;
+    % -------------------------------------------------------------attempt3
+    % demodulatedSignal = abs(hilbert(through_channel_noisy));
+        
 end
 % ----------------------------------------- %
