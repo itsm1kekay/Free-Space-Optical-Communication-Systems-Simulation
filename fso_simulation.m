@@ -15,7 +15,6 @@ function [text_output,ber_ratio,snr,total_losses,thresholded_signal,...
         otherwise                                                           % OOK and no modulation
             BW=BR/log2(2);
     end
-    
     % ---------------------------------------------------------------------
     % section 2 - transmitter side
     [modulated, binary_text]= transmitter(modulation,text_input,carrier_frequency,av_transmitted_power,BR);
@@ -27,7 +26,7 @@ function [text_output,ber_ratio,snr,total_losses,thresholded_signal,...
     av_transmitted_power,BW);
     % ---------------------------------------------------------------------
     % section 4 - receiver side   
-    [text_output, thresholded_signal] = receiver(demodulation,through_channel_noisy,BR,av_transmitted_power);
+    [text_output, thresholded_signal] = receiver(demodulation,through_channel_noisy,av_transmitted_power);
     disp(['Output text is: ' text_output]);
     disp(['SNR is: ' num2str(snr) ' dB']);
     % ---------------------------------------------------------------------

@@ -13,9 +13,9 @@ function [modulated, binary_text]= transmitter(modulation, text_input, carrier_f
     square_wave = pulse_shaping(binary_text,BR);
     switch modulation
     case "OOK"
-        modulated = ook_modulation(binary_text,carrier_frequency,av_transmitted_power,BR);
+        modulated = av_transmitted_power*ook_modulation(binary_text,carrier_frequency,BR);
     case "16 QAM"
-        modulated = av_transmitted_power*qammod(square_wave,16,UnitAveragePower=true);
+        modulated = av_transmitted_power*qammod(binary_text,16);
     case "QPSK"
         % modulated= qpsk_modulation(binary_text,carrier_frequency);
         modulated = av_transmitted_power*pskmod(binary_text,4,pi/4);
@@ -37,10 +37,7 @@ end
 
 % ------------- Pulse shaping ------------%
 function square_wave= pulse_shaping(binary_text,BR)
-    % samplingRate=10*BR;
-    % duration=length(binary_text)/BR;
     t=0:1/BR:(length(binary_text)-1)/BR;
-    % upsampled=upsample(binary_text,samplingRate/BR);
     square_waveform=square(BR*t);
     for i=1:length(square_waveform)
         if square_waveform(i)==-1
@@ -52,9 +49,9 @@ end
 
 % ----------------------------------------%
 % ------------- Modulations ------------- %
-function modulated = ook_modulation(binary_text, carrier_frequency,av_transmitted_power,BR)
+function modulated = ook_modulation(binary_text, carrier_frequency,BR)
     t=0:1/BR:(length(binary_text)-1)/BR;
-    carrier_signal = av_transmitted_power*cos(2*pi*carrier_frequency*t);
+    carrier_signal = cos(2*pi*carrier_frequency*t);
     modulated=carrier_signal.*binary_text;
 end
 % --------------------------------------- %

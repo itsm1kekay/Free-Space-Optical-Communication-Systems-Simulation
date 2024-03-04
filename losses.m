@@ -40,7 +40,7 @@ beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
             PointErr = PointErr1 + PointErr2;
             GML = 2* GML; 
 
-        otherwise                           % Cosmic Space from earth
+        otherwise                                                          % Cosmic Space from earth
             [atm_atten, scattering_coefficient]=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
