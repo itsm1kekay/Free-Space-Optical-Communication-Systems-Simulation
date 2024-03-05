@@ -6,22 +6,22 @@
 % Filtering with fft, demodulation, thresholding and converting the
 % demodulated binary message back to ascii.
 
-function [text_output, thresholded_signal]=receiver(demodulation,through_channel_noisy,av_transmitted_power)
+function [text_output, thresholded_signal]=receiver(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
     switch demodulation
         case "OOK"
-            through_channel_noisy=through_channel_noisy/av_transmitted_power;
-            thresholded_signal = threshold(through_channel_noisy,"TRUE",av_transmitted_power);
+            through_channel_noisy=through_channel_noisy/av_received_power;
+            thresholded_signal = threshold(through_channel_noisy,"TRUE",av_received_power);
         case "QPSK"
             demodulated_signal = pskdemod(through_channel_noisy,4,pi/4);
-            thresholded_signal = threshold(demodulated_signal,"FALSE",av_transmitted_power);
+            thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);
         case "16 QAM"   
             through_channel_noisy=through_channel_noisy/av_transmitted_power;
             demodulated_signal = qamdemod(through_channel_noisy,16);
-            thresholded_signal = threshold(demodulated_signal,"FALSE",av_transmitted_power);
+            thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);
         otherwise                                                          % no demodulation
         demodulated_signal = through_channel_noisy;
         filteredSignal = fft_filtering(demodulated_signal);
-        thresholded_signal = threshold(filteredSignal,"FALSE",av_transmitted_power);
+        thresholded_signal = threshold(filteredSignal,"FALSE",av_received_power);
     end
     text_output = binaryToText(thresholded_signal);
 end

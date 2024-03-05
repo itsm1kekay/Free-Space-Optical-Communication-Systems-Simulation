@@ -107,7 +107,6 @@ function [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,
     end
     scattering_coefficient=(3.91/visibility)*((wavelength/550e-9)^(-q)); %in dB/km
     atm_atten=scattering_coefficient*link_length;
-    % atm_atten=kappa_atm*Rain_intensity^alpha_atm;
 end
 
 function PointErr=pointing_error(misaligment,link_length)
