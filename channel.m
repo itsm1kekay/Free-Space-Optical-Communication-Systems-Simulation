@@ -60,6 +60,6 @@ av_transmitted_power,BW)
     power_losses_dB=pow2db(db2pow(total_losses(1))+db2pow(total_losses(2))+db2pow(total_losses(3))+db2pow(total_losses(4))+db2pow(total_losses(5)));
     av_received_power=db2pow(pow2db(av_transmitted_power)-power_losses_dB);
     irradiance=photodiode_responsivity*av_received_power;
-    snr= (irradiance^2)/(total_noise);
+    snr= pow2db((irradiance^2)/(total_noise));
     through_channel_noisy = awgn(through_channel,snr,'measured');
 end 
