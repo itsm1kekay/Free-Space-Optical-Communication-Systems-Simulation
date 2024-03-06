@@ -3,10 +3,9 @@
 % ---------------------------------------------------------------------
 % section 3 - channel
 % 
-% Introduction to channel - noise and channel attenuation/losses
+% Description: Introduction to channel - noise and losses
 %
-% Note: the channel attenuation/losses haven't been added yet because
-% I'm still figuring them out
+% Note: Pointing error and turbulence effect haven't been added yet
 
 function [through_channel_noisy,snr, total_losses,av_received_power] = channel(modulated, ...
 transmission_location,Apperture,beam_divergence, link_length, ...

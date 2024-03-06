@@ -1,13 +1,9 @@
 %% transmitter function file
 
-
-% ---------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % section 2 - transmitter side
 % 
-% convert to binary and modulate to transmit
-%
-% Note: my ook modulation function appears to be broken for some
-% reason. It runs but it gives higher ber than expected.
+% Description: convert to binary and modulate to transmit
 function [modulated, binary_text]= transmitter(modulation, text_input, carrier_frequency,av_transmitted_power,BR)
     binary_text = textToBinary(text_input); % ascii to binary conversion
     square_wave = pulse_shaping(binary_text,BR);

@@ -1,13 +1,10 @@
 %% losses function file 
 
 
-% ---------------------------------------------------------------------
+% -------------------------------------------------------------------------
 % section 3.1 - losses in channel
 % 
-% convert to binary and modulate to transmit
-%
-% Note: my ook modulation function appears to be broken for some
-% reason. It runs but it gives higher ber than expected.
+% Description: calculate the losses in the channel for the given parameters
 
 function [total_losses, scattering_coefficient] = losses(transmission_location,Apperture, ...
 beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
@@ -19,36 +16,37 @@ beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
             TurbEff=0; 
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
-
+            
         case "Ground only"
-            [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,atm_conditions,"KRUSE",wavelength);             
+            scattering_coefficient=scattering(atm_conditions,"KRUSE",wavelength);             
             scint=scintillation("NME VI",link_length,wavelength); % scintillation model: New Model Equation 5
             TurbEff= turbulence_effect();
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
-
+            atm_atten=scattering_coefficient*link_length;
         case "Ground via sat relay"
-            [atm_atten, scattering_coefficient]=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
-            scint=scintillation("HV",LEO_distance,wavelength);
-            TurbEff= turbulence_effect();
-            GML=geometrical_losses(Apperture,beam_divergence,LEO_distance);
-            PointErr1=pointing_error(misaligment,LEO_distance);
-            PointErr2=pointing_error(misaligment,LEO_distance);
-            % for round trip
-            atm_atten= 2* atm_atten;    
-            TurbEff= 2* TurbEff;    
-            PointErr = PointErr1 + PointErr2;
-            GML = 2* GML; 
-
-        otherwise                                                          % Cosmic Space from earth
-            [atm_atten, scattering_coefficient]=atmosperic_attenuation(LEO_distance,atm_conditions,"KIM",wavelength);
+            scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);
             scint=scintillation("HV",LEO_distance,wavelength);
             TurbEff= turbulence_effect();
             GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
-            GML2=geometrical_losses(Apperture,beam_divergence,(link_length-LEO_distance));
+            GML2=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             PointErr1=pointing_error(misaligment,LEO_distance);
-            PointErr2=pointing_error(misaligment,(link_length - LEO_distance));
+            PointErr2=pointing_error(misaligment,LEO_distance);
+            % for round trip
+            atm_atten=scattering_coefficient*2*LEO_distance;
+            TurbEff= 2* TurbEff;    
+            PointErr = PointErr1 + PointErr2;
+            GML = GML1+GML2; 
 
+        otherwise                                                          % Cosmic Space from earth
+            scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);
+            scint=scintillation("HV",LEO_distance,wavelength);
+            TurbEff= turbulence_effect();
+            GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
+            GML2=geometrical_losses(Apperture,beam_divergence,link_length);
+            PointErr1=pointing_error(misaligment,LEO_distance);
+            PointErr2=pointing_error(misaligment,link_length);
+            atm_atten=scattering_coefficient*LEO_distance;
             % for whole trip
             GML= GML1 + GML2; 
             PointErr = PointErr1 + PointErr2;
@@ -61,7 +59,7 @@ end
 function GML= geometrical_losses(Apperture,beam_divergence,link_length)
     GML=10*log10(4*Apperture/pi*(beam_divergence*link_length)^2);
 end
-function [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,atm_conditions,model,wavelength)
+function scattering_coefficient=scattering(atm_conditions,model,wavelength)
     switch atm_conditions
         % need to add a.k,R values 
         case "Very clear air"
@@ -106,7 +104,6 @@ function [atm_atten, scattering_coefficient]=atmosperic_attenuation(link_length,
             end
     end
     scattering_coefficient=(3.91/visibility)*((wavelength/550e-9)^(-q)); %in dB/km
-    atm_atten=scattering_coefficient*link_length;
 end
 
 function PointErr=pointing_error(misaligment,link_length)
