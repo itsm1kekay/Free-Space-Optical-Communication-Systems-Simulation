@@ -30,7 +30,7 @@ function [mc_bit_error_rate,snr] = monte_carlo(text_input, ...
             av_transmitted_power(j),BW);
             [~, thresholded_signal] = receiver(demodulation, ...
                 through_channel_noisy,av_received_power,av_transmitted_power(j));
-            bit_error_rate(i)=biterr(binary_text,thresholded_signal);
+            [~,bit_error_rate(i)]=biterr(binary_text,thresholded_signal);
         end
         snr_temp(j)=snr;
         mc_bit_error_rate(j)=mean(bit_error_rate);
