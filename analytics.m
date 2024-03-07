@@ -1,13 +1,13 @@
 %% analytics function file
+% Author: Michail Kasmeridis
+% Last modified: 07/03/2024
 
 % ---------------------------------------------------------------------
 % section 5 - analytics
 % 
 % Bit Error Rate (BER) calculation and plotting
 %
-% Note: the plotting function is commented out, since it's only used 
-% when running the script locally (not through the app). Haven't found
-% a way to subplot into the gui.
+% Note: probably don't need this, but we shall see
 
 function ber_ratio= analytics(thresholded_signal ,binary_text)
     [~,ber_ratio] = biterr(thresholded_signal ,binary_text);

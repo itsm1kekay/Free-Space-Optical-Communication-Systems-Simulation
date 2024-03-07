@@ -1,4 +1,6 @@
 %% channel function file
+% Author: Michail Kasmeridis
+% Last modified: 07/03/2024
 
 % ---------------------------------------------------------------------
 % section 3 - channel

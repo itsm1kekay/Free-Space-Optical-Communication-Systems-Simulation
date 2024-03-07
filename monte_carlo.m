@@ -1,4 +1,6 @@
 %% Monte Carlo Function File
+% Author: Michail Kasmeridis
+% Last modified: 07/03/2024
 
 % -------------------------------------------------------------------------
 % section 5 - Monte Carlo simulation
