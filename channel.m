@@ -15,7 +15,7 @@ LEO_distance, misaligment,atm_conditions,wavelength, ...
 av_transmitted_power,BW)
 % ---------------------------------------------------------------------
 % section 3.1 - losses
-    [total_losses,scattering_coefficient] = losses(transmission_location,Apperture,beam_divergence, ...
+    [total_losses,scattering_coefficient,rytov] = losses(transmission_location,Apperture,beam_divergence, ...
     link_length,LEO_distance,misaligment,atm_conditions,wavelength);
 % ---------------------------------------------------------------------
 % section 3.2 - distributions
@@ -27,16 +27,15 @@ av_transmitted_power,BW)
     elseif scattering_coefficient > 0.5 && scattering_coefficient <= 5 % medium-strong turbulence
         % ------------------------------------------log normal distribution
         mean=1;
-        variance=2;
+        variance=rytov;
         mu=log((mean^2)/sqrt(variance+mean^2));
         sigma = sqrt(log(variance/(mean^2)+1));
-        r = lognrnd(mu,sigma,[1 length(modulated)]);
-        through_channel=modulated+r;
+        through_channel=modulated.*lognrnd(mu,sigma,[1 length(modulated)]);
     elseif scattering_coefficient > 5 && scattering_coefficient <= 25 % strong turbulence - saturation
         % -----------------------------------------gamma gamma distribution
-        % gamrnd(x,y).*gamrd(x1,y1)
-        through_channel=modulated;
-        
+        a=(exp(0.49*(rytov^2)/(1+0.56*(rytov^12/6))^7/6)-1)^-1;
+        b=(exp(0.51*(rytov)^2)/(1+0.69*(rytov^12/6)^5/6)-1)^-1;
+        through_channel=modulated.*gamrnd(a,b).*gamrd(a,b);
     end
     % ---------------------------------------------------------------------
     % section 3.3 noises
@@ -46,7 +45,7 @@ av_transmitted_power,BW)
     boltzman_constant= 1.380649e-23;
     % ---------------------------------------------------------------------
     % receiver characteristics---------------------------------------------
-    temperature= 350; %typical value - should make conditional select
+    temperature= 300; %typical value - should make conditional select
     quantum_efficiency=0.95; %should find typical values
     photodiode_responsivity= quantum_efficiency*elemental_charge/(h*3e8/wavelength);
     receiver_resistance=50; %typical value
@@ -58,7 +57,7 @@ av_transmitted_power,BW)
     dark_current_noise=0;
     total_noise=shot_noise+thermal_noise+dark_current_noise;
     % ---------------------------------------------------------------------
-    power_losses_dB=pow2db(db2pow(total_losses(1))+db2pow(total_losses(2))+db2pow(total_losses(3))+db2pow(total_losses(4))+db2pow(total_losses(5)));
+    power_losses_dB=pow2db(db2pow(total_losses(1))+db2pow(total_losses(2))+db2pow(total_losses(3)));
     av_received_power=db2pow(pow2db(av_transmitted_power)-power_losses_dB);
     irradiance=photodiode_responsivity*av_received_power;
     snr= pow2db((irradiance^2)/(total_noise));

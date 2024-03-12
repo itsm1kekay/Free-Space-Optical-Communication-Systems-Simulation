@@ -20,10 +20,11 @@ function [text_output, thresholded_signal]=receiver(demodulation,through_channel
             through_channel_noisy=through_channel_noisy/av_transmitted_power;
             demodulated_signal = qamdemod(through_channel_noisy,16);
             thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);
+            % thresholded_signal=demodulated_signal;
         otherwise                                                          % no demodulation
-        demodulated_signal = through_channel_noisy;
-        filteredSignal = fft_filtering(demodulated_signal);
-        thresholded_signal = threshold(filteredSignal,"FALSE",av_received_power);
+            demodulated_signal = through_channel_noisy;
+            filteredSignal = fft_filtering(demodulated_signal);
+            thresholded_signal = threshold(filteredSignal,"FALSE",av_received_power);
     end
     text_output = binaryToText(thresholded_signal);
 end
@@ -57,7 +58,7 @@ function thresholded_signal= threshold(inputSignal,is_ook,av_transmitted_power)
     thresholded_signal=zeros(1,length(inputSignal));
     switch is_ook
         case "FALSE"
-            threshold_value= max(inputSignal)/2;
+            threshold_value= 0.5;
             for i=1:length(inputSignal)
                 if inputSignal(i)>=threshold_value
                     thresholded_signal(i)=1;

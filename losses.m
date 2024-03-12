@@ -8,53 +8,45 @@
 % 
 % Description: calculate the losses in the channel for the given parameters
 
-function [total_losses, scattering_coefficient] = losses(transmission_location,Apperture, ...
+function [total_losses,scattering_coefficient,rytov] = losses(transmission_location,Apperture, ...
 beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
         switch transmission_location
         case "Cosmic Space only"
             atm_atten=0;
             scattering_coefficient=0;
-            scint=0; % case of insterstellar scintillation????
-            TurbEff=0; 
+            rytov=0;
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
-            
         case "Ground only"
             scattering_coefficient=scattering(atm_conditions,"KRUSE",wavelength);             
-            scint=scintillation("NME VI",link_length,wavelength); % scintillation model: New Model Equation 5
-            TurbEff= turbulence_effect();
+            [scint,rytov]=scintillation("NME VI",link_length,wavelength); % scintillation model: New Model Equation 5
             GML=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr=pointing_error(misaligment,link_length);
-            atm_atten=scattering_coefficient*link_length;
+            atm_atten=(scattering_coefficient*link_length)+scint;
         case "Ground via sat relay"
             scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);
-            scint=scintillation("HV",LEO_distance,wavelength);
-            TurbEff= turbulence_effect();
+            [scint,rytov]=scintillation("HV",2*LEO_distance,wavelength);
             GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             GML2=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             PointErr1=pointing_error(misaligment,LEO_distance);
             PointErr2=pointing_error(misaligment,LEO_distance);
             % for round trip
-            atm_atten=scattering_coefficient*2*LEO_distance;
-            TurbEff= 2* TurbEff;    
+            atm_atten=pow2db(db2pow(scattering_coefficient*2*LEO_distance)+db2pow(scint));
             PointErr = PointErr1 + PointErr2;
             GML = GML1+GML2; 
-
         otherwise                                                          % Cosmic Space from earth
             scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);
-            scint=scintillation("HV",LEO_distance,wavelength);
-            TurbEff= turbulence_effect();
+            [scint,rytov]=scintillation("HV",LEO_distance,wavelength);
             GML1=geometrical_losses(Apperture,beam_divergence,LEO_distance);
             GML2=geometrical_losses(Apperture,beam_divergence,link_length);
             PointErr1=pointing_error(misaligment,LEO_distance);
             PointErr2=pointing_error(misaligment,link_length);
-            atm_atten=scattering_coefficient*LEO_distance;
+            atm_atten=pow2db(db2pow(scattering_coefficient*LEO_distance)+db2pow(scint));
             % for whole trip
             GML= GML1 + GML2; 
             PointErr = PointErr1 + PointErr2;
-
         end
-        total_losses=[atm_atten,scint,GML,PointErr,TurbEff];
+        total_losses=[atm_atten,GML,PointErr];
 end
 
 % ------------------- Losses ------------------- %
@@ -113,12 +105,7 @@ function PointErr=pointing_error(misaligment,link_length)
     PointErr=0;
 end
 
-function TurbEff=turbulence_effect()
-    % Rytov variation
-    TurbEff=0;
-end
-
-function scint=scintillation(scintillation_model,link_length,wavelength)
+function [scint,rytov]=scintillation(scintillation_model,link_length,wavelength)
     switch scintillation_model
         case "HV"
             cn2 = exp(-link_length/1000) + (2.7e-16)*exp(link_length/1500);
@@ -148,7 +135,7 @@ function scint=scintillation(scintillation_model,link_length,wavelength)
     %     kappa =0.5;
     % end
     kappa = 1.23;
-    si2 = kappa*cn2*((2*pi/wavelength)^(7/6))*(link_length)^(11/6); 
-    scint = 10*log10(si2);
+    rytov = kappa*cn2*((2*pi/wavelength)^(7/6))*(link_length)^(11/6); 
+    scint = 10*log10(rytov);
 end
 % ---------------------------------------------- %
