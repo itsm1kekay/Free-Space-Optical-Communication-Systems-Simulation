@@ -7,36 +7,32 @@
 % 
 % Description: performing Monte Carlo simulation on the system
 
-function [mc_bit_error_rate,snr] = monte_carlo(text_input, ...
-            transmission_location,Apperture,beam_divergence, ...
-            link_length,misaligment,...
-            atm_conditions,wavelength,BW,...
-            modulation,BR,av_transmitted_power)
+function mc = monte_carlo(binary_input,link,BW,modulation,transmitter)
     % setup----------------------------------------------------------------
     demodulation= modulation;
-    LEO_distance =2000;
-    av_transmitted_power=linspace(1e-6,av_transmitted_power,20);
-    carrier_frequency = 3e8/wavelength;
-    iterations=100;                                                        % for speed
+    av_transmitted_power=linspace(1e-3,transmitter.av_trans_power,10);
+    carrier_frequency = 3e8/transmitter.wavelength;
+    iterations=1e3;                                                        % for speed
     mc_bit_error_rate=zeros(1,length(av_transmitted_power));
+    % bit_rate=link.BR;
     %----------------------------------------------------------------------
     % MC-------------------------------------------------------------------
     for j=1:length(av_transmitted_power)
-        bit_error_rate=zeros(1,iterations);
+        bit_error_number=zeros(1,iterations);
+        snr=zeros(1,iterations);
         for i=1:iterations
-            [modulated, binary_text]= transmitter(modulation,text_input,...
-            carrier_frequency,av_transmitted_power(j),BR);
-            [through_channel_noisy,snr, ~,av_received_power] = channel(modulated, ...
-                transmission_location,Apperture,beam_divergence, ...
-            link_length,LEO_distance,misaligment,atm_conditions,wavelength, ...
-            av_transmitted_power(j),BW);
-            [~, thresholded_signal] = receiver(demodulation, ...
-                through_channel_noisy,av_received_power,av_transmitted_power(j));
-            [~,bit_error_rate(i)]=biterr(binary_text,thresholded_signal); %% take the avaerage snr for all the iterations
+            modulated= modulator(modulation,binary_input,carrier_frequency,av_transmitted_power(j),link.BR);
+            transmitter.av_trans_power=av_transmitted_power(j);
+            [through_channel_noisy,snr(i), ~,av_received_power] = channel(modulated, ...
+                link,transmitter,BW);
+            binary_output = receiver(demodulation, through_channel_noisy,...
+                av_received_power,av_transmitted_power(j));
+            bit_error_number(i)=biterr(binary_input,binary_output); %% take the avaerage snr for all the iterations
         end
-        snr_temp(j)=snr;
-        mc_bit_error_rate(j)=mean(bit_error_rate);
+        snr_temp(j)=mean(snr);
+        mc_bit_error_rate(j)=sum(bit_error_number)/(length(binary_output)*iterations);
     end
     %----------------------------------------------------------------------
-    snr=snr_temp;
+    mc.snr=snr_temp;
+    mc.ber=mc_bit_error_rate;
 end

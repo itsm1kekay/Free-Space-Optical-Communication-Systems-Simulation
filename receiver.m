@@ -1,6 +1,6 @@
 %% receiver function file
 % Author: Michail Kasmeridis
-% Last modified: 07/03/2024
+% Last modified: 15/03/2024
 
 % ---------------------------------------------------------------------
 % section 4 - receiver side
@@ -8,7 +8,7 @@
 % Description: Filtering with fft, demodulation, thresholding and converting 
 % the demodulated binary message back to ascii.
 
-function [text_output, thresholded_signal]=receiver(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
+function binary_output=receiver(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
     switch demodulation
         case "OOK"
             through_channel_noisy=through_channel_noisy/av_received_power;
@@ -17,7 +17,7 @@ function [text_output, thresholded_signal]=receiver(demodulation,through_channel
             demodulated_signal = pskdemod(through_channel_noisy,4,pi/4);
             thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);
         case "16 QAM"   
-            through_channel_noisy=through_channel_noisy/av_transmitted_power;
+            through_channel_noisy=through_channel_noisy/(2*av_transmitted_power);
             demodulated_signal = qamdemod(through_channel_noisy,16);
             thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);
             % thresholded_signal=demodulated_signal;
@@ -26,7 +26,7 @@ function [text_output, thresholded_signal]=receiver(demodulation,through_channel
             filteredSignal = fft_filtering(demodulated_signal);
             thresholded_signal = threshold(filteredSignal,"FALSE",av_received_power);
     end
-    text_output = binaryToText(thresholded_signal);
+    binary_output=thresholded_signal;
 end
 
 % ------------- Conversions ------------- %
@@ -67,7 +67,7 @@ function thresholded_signal= threshold(inputSignal,is_ook,av_transmitted_power)
                 end
             end
         case "TRUE"
-            threshold_value=av_transmitted_power/2;
+            threshold_value=av_transmitted_power;
             for i=1:length(inputSignal)
                 if inputSignal(i) > threshold_value || inputSignal(i) <-threshold_value
                     thresholded_signal(i)=1;

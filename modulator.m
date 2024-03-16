@@ -1,12 +1,12 @@
 %% transmitter function file
 % Author: Michail Kasmeridis
-% Last modified: 07/03/2024
+% Last modified: 15/03/2024
 
 % -------------------------------------------------------------------------
 % section 2 - transmitter side
 % 
 % Description: convert to binary and modulate to transmit
-function [modulated, binary_input]= transmitter(modulation, binary_input, carrier_frequency,av_transmitted_power,BR)
+function [modulated, binary_input]= modulator(modulation, binary_input, carrier_frequency,av_transmitted_power,BR)
     square_wave = pulse_shaping(binary_input,BR);
     switch modulation
     case "OOK"

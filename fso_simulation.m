@@ -1,46 +1,38 @@
 %% master function file called by app
 % Author: Michail Kasmeridis
-% Last modified: 07/03/2024
+% Last modified: 15/03/2024
 
-function [text_output,ber_ratio,snr,total_losses,thresholded_signal,...
-    binary_text,BW] = fso_simulation(text_input,wavelength,modulation, ...
-    transmission_location,link_length,BR,Apperture,beam_divergence, ...
-    atm_conditions,misaligment,av_transmitted_power)
+function [binary_output,ber_ratio,snr,total_losses,BW] =...
+        fso_simulation(binary_input,modulation,link,transmitter)
     % ---------------------------------------------------------------------
     % section 1 - setup
-    carrier_frequency= 3e8/wavelength;
-    LEO_distance = 2000;                                                    % leo distance from earth: 2000 km    
+    carrier_frequency= 3e8/transmitter.wavelength;    
     demodulation = modulation;                                              % same modulation/demodulation technique
     switch modulation
         case "QPSK"
-            BW=BR/log2(4);
+            BW=link.BR/log2(4);
         case "16 QAM"
-            BW=BR/log2(16);
+            BW=link.BR/log2(16);
         otherwise                                                           % OOK and no modulation
-            BW=BR/log2(2);
+            BW=link.BR/log2(2);
     end
     % ---------------------------------------------------------------------
     % section 2 - transmitter side
-    [modulated, binary_text]= transmitter(modulation,text_input,carrier_frequency,av_transmitted_power,BR);
+    modulated= modulator(modulation,binary_input,carrier_frequency,...
+        transmitter.av_trans_power,link.BR);
     % ---------------------------------------------------------------------
     % section 3 - channel
     [through_channel_noisy,snr, total_losses,av_received_power] = channel(modulated, ...
-    transmission_location,Apperture,beam_divergence, ...
-    link_length,LEO_distance,misaligment,atm_conditions,wavelength, ...
-    av_transmitted_power,BW);
+        link,transmitter,BW);
     % ---------------------------------------------------------------------
     % section 4 - receiver side   
-    [text_output, thresholded_signal] = receiver(demodulation,through_channel_noisy,av_received_power,av_transmitted_power);
-    disp(['Output text is: ' text_output]);
+    binary_output = receiver(demodulation,...
+        through_channel_noisy,av_received_power,transmitter.av_trans_power);
+    % disp(['Output text is: ' text_output]);
     disp(['SNR is: ' num2str(snr) ' dB']);
     % ---------------------------------------------------------------------
     % section 5 - analytics
-    ber_ratio = analytics(thresholded_signal ,binary_text);
+    ber_ratio = analytics(binary_output ,binary_input);
     disp(['Ber is: ' num2str(ber_ratio)]);
     % ---------------------------------------------------------------------
-    % section 6 - MonteCarlo
-    % monte_carlo(thresholded_signal,binary_text);
 end
-
-% ------------------------------ Functions ------------------------------ %
-% ----------------------------------------------------------------------- %

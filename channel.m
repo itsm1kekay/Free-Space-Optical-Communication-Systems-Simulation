@@ -1,6 +1,6 @@
 %% channel function file
 % Author: Michail Kasmeridis
-% Last modified: 07/03/2024
+% Last modified: 15/03/2024
 
 % ---------------------------------------------------------------------
 % section 3 - channel
@@ -10,13 +10,12 @@
 % Note: Pointing error and turbulence effect haven't been added yet
 
 function [through_channel_noisy,snr, total_losses,av_received_power] = channel(modulated, ...
-transmission_location,Apperture,beam_divergence, link_length, ...
-LEO_distance, misaligment,atm_conditions,wavelength, ...
-av_transmitted_power,BW)
+    link,transmitter,BW)
+    av_transmitted_power=transmitter.av_trans_power;
+    LEO_distance = 2000;                                                    % leo distance from earth: 2000 km
 % ---------------------------------------------------------------------
 % section 3.1 - losses
-    [total_losses,scattering_coefficient,rytov] = losses(transmission_location,Apperture,beam_divergence, ...
-    link_length,LEO_distance,misaligment,atm_conditions,wavelength);
+    [total_losses,scattering_coefficient,rytov] = losses(link,LEO_distance,transmitter);
 % ---------------------------------------------------------------------
 % section 3.2 - distributions
 % ---------------------------------------------------------------------
@@ -47,7 +46,7 @@ av_transmitted_power,BW)
     % receiver characteristics---------------------------------------------
     temperature= 300; %typical value - should make conditional select
     quantum_efficiency=0.95; %should find typical values
-    photodiode_responsivity= quantum_efficiency*elemental_charge/(h*3e8/wavelength);
+    photodiode_responsivity= quantum_efficiency*elemental_charge/(h*3e8/transmitter.wavelength);
     receiver_resistance=50; %typical value
     % ---------------------------------------------------------------------
     % noises---------------------------------------------------------------

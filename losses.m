@@ -1,6 +1,6 @@
 %% losses function file 
 % Author: Michail Kasmeridis
-% Last modified: 07/03/2024
+% Last modified: 15/03/2024
 
 
 % -------------------------------------------------------------------------
@@ -8,8 +8,15 @@
 % 
 % Description: calculate the losses in the channel for the given parameters
 
-function [total_losses,scattering_coefficient,rytov] = losses(transmission_location,Apperture, ...
-beam_divergence,link_length,LEO_distance,misaligment,atm_conditions,wavelength)
+function [total_losses,scattering_coefficient,rytov] = losses(link,LEO_distance,transmitter)
+transmission_location=link.location;
+Apperture=transmitter.apperture;
+beam_divergence=transmitter.beam_divergence;
+link_length=link.length;
+misaligment=transmitter.misaligment;
+atm_conditions=link.atm_conditions;
+wavelength=transmitter.wavelength;
+
         switch transmission_location
         case "Cosmic Space only"
             atm_atten=0;
@@ -101,7 +108,7 @@ function scattering_coefficient=scattering(atm_conditions,model,wavelength)
 end
 
 function PointErr=pointing_error(misaligment,link_length)
-    %need to calculate beam width
+    
     PointErr=0;
 end
 
