@@ -9,15 +9,15 @@
 function [modulated, binary_input]= modulator(modulation, binary_input, carrier_frequency,av_transmitted_power,BR)
     square_wave = pulse_shaping(binary_input,BR);
     switch modulation
-    case "OOK"
-        modulated = 2*av_transmitted_power*ook_modulation(binary_input,carrier_frequency,BR);
-    case "16 QAM"
-        modulated = 2*av_transmitted_power*qammod(binary_input,16);
-    case "QPSK"
-        % modulated= qpsk_modulation(binary_text,carrier_frequency);
-        modulated = 2*av_transmitted_power*pskmod(binary_input,4,pi/4);
+        case "OOK"
+            modulated = 2*av_transmitted_power*ook_modulation(binary_input,carrier_frequency,BR);
+        case "16 QAM"
+            modulated = 2*av_transmitted_power*qammod(binary_input,16);
+        case "QPSK"
+            % modulated= qpsk_modulation(binary_text,carrier_frequency);
+            modulated = 2*av_transmitted_power*pskmod(binary_input,4,pi/4);
         otherwise                                                          % no modulation
-        modulated = square_wave;
+            modulated = square_wave;
     end
 end 
 

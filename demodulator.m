@@ -8,7 +8,7 @@
 % Description: Filtering with fft, demodulation, thresholding and converting 
 % the demodulated binary message back to ascii.
 
-function binary_output=receiver(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
+function binary_output=demodulator(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
     switch demodulation
         case "OOK"
             through_channel_noisy=through_channel_noisy/av_received_power;

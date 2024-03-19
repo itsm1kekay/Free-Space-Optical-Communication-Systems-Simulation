@@ -7,12 +7,12 @@
 % 
 % Description: performing Monte Carlo simulation on the system
 
-function mc = monte_carlo(binary_input,link,BW,modulation,transmitter)
+function mc = monte_carlo(binary_input,link,BW,modulation,transmitter,receiver,constants)
     % setup----------------------------------------------------------------
     demodulation= modulation;
     av_transmitted_power=linspace(1e-3,transmitter.av_trans_power,10);
     carrier_frequency = 3e8/transmitter.wavelength;
-    iterations=1e3;                                                        % for speed
+    iterations=1e2;                                                        % for speed
     mc_bit_error_rate=zeros(1,length(av_transmitted_power));
     % bit_rate=link.BR;
     %----------------------------------------------------------------------
@@ -24,8 +24,8 @@ function mc = monte_carlo(binary_input,link,BW,modulation,transmitter)
             modulated= modulator(modulation,binary_input,carrier_frequency,av_transmitted_power(j),link.BR);
             transmitter.av_trans_power=av_transmitted_power(j);
             [through_channel_noisy,snr(i), ~,av_received_power] = channel(modulated, ...
-                link,transmitter,BW);
-            binary_output = receiver(demodulation, through_channel_noisy,...
+                link,transmitter,BW,receiver,constants);
+            binary_output = demodulator(demodulation, through_channel_noisy,...
                 av_received_power,av_transmitted_power(j));
             bit_error_number(i)=biterr(binary_input,binary_output); %% take the avaerage snr for all the iterations
         end
