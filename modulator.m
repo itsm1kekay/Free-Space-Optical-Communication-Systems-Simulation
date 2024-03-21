@@ -1,6 +1,6 @@
 %% transmitter function file
 % Author: Michail Kasmeridis
-% Last modified: 15/03/2024
+% Last modified: 21/03/2024
 
 % -------------------------------------------------------------------------
 % section 2 - transmitter side
@@ -10,7 +10,8 @@ function [modulated, binary_input]= modulator(modulation, binary_input, carrier_
     square_wave = pulse_shaping(binary_input,BR);
     switch modulation
         case "OOK"
-            modulated = 2*av_transmitted_power*ook_modulation(binary_input,carrier_frequency,BR);
+            % modulated = 2*av_transmitted_power*ook_modulation(binary_input,carrier_frequency,BR);
+            modulated = 2*av_transmitted_power*pammod(binary_input,2);
         case "16 QAM"
             modulated = 2*av_transmitted_power*qammod(binary_input,16);
         case "QPSK"

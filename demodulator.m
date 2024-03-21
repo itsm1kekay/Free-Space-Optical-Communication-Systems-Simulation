@@ -1,6 +1,6 @@
 %% receiver function file
 % Author: Michail Kasmeridis
-% Last modified: 15/03/2024
+% Last modified: 21/03/2024
 
 % ---------------------------------------------------------------------
 % section 4 - receiver side
@@ -12,7 +12,8 @@ function binary_output=demodulator(demodulation,through_channel_noisy,av_receive
     switch demodulation
         case "OOK"
             through_channel_noisy=through_channel_noisy/av_received_power;
-            thresholded_signal = threshold(through_channel_noisy,"TRUE",av_received_power);
+            demodulated_signal= pamdemod(through_channel_noisy,2);
+            thresholded_signal = threshold(demodulated_signal,"TRUE",av_received_power);
         case "QPSK"
             demodulated_signal = pskdemod(through_channel_noisy,4,pi/4);
             thresholded_signal = threshold(demodulated_signal,"FALSE",av_received_power);

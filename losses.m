@@ -1,6 +1,6 @@
 %% losses function file 
 % Author: Michail Kasmeridis
-% Last modified: 15/03/2024
+% Last modified: 21/03/2024
 
 
 % -------------------------------------------------------------------------

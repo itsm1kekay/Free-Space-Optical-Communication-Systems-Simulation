@@ -1,6 +1,6 @@
 %% master function file called by app
 % Author: Michail Kasmeridis
-% Last modified: 15/03/2024
+% Last modified: 21/03/2024
 
 function [binary_output,ber_ratio,snr,total_losses,BW,distribution,constants,receiver] =...
         fso_simulation(binary_input,modulation,link,transmitter,receiver)
@@ -35,7 +35,7 @@ function [binary_output,ber_ratio,snr,total_losses,BW,distribution,constants,rec
     % ---------------------------------------------------------------------
     % section 3 - channel
     [through_channel_noisy,snr, total_losses,av_received_power,distribution] = channel(modulated, ...
-        link,transmitter,BW,receiver,constants);
+        link,transmitter,receiver,constants);
     receiver.av_received_power=av_received_power;
     % ---------------------------------------------------------------------
     % section 4 - receiver side   
