@@ -36,7 +36,7 @@ function [total_losses,rytov] = losses(link,LEO_distance,transmitter,receiver)
         otherwise                                                          % Cosmic Space from earth
             scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);
             [scint,rytov,cn2]=scintillation("MHV",LEO_distance,wavelength,LEO_distance);
-            link.length=LEO_distance;
+            link.length=link.length+LEO_distance;
             [GML1,PE1]=GML_and_PE_losses(transmitter,link,receiver,transmitter.misalignment(1),transmitter.misalignment(2),cn2);
             [GML2,PE2]=GML_and_PE_losses(transmitter,link,receiver,transmitter.misalignment(3),transmitter.misalignment(4),cn2);
             atm_atten=pow2db(db2pow(scattering_coefficient*max_length_for_scattering)+db2pow(scint));

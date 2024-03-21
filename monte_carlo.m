@@ -14,7 +14,7 @@ function mc = monte_carlo(binary_input,link,modulation,transmitter,receiver,cons
     mc.powa_linear=10.^(mc.powa_dbm/10)*1e-3;
     powa=mc.powa_linear;
     carrier_frequency = 3e8/transmitter.wavelength;
-    iterations=10e2;                                                        % for speed
+    iterations=1e3;                                                        % for speed
     mc_bit_error_rate=zeros(1,length(powa));
     %----------------------------------------------------------------------
     % MC-------------------------------------------------------------------
