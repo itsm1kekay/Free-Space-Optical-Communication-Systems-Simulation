@@ -1,4 +1,4 @@
-%% master function file called by app
+%% master function file called by application
 % Author: Michail Kasmeridis
 % Last modified: 21/03/2024
 

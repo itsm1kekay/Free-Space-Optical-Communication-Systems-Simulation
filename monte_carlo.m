@@ -5,7 +5,9 @@
 % -------------------------------------------------------------------------
 % section 5 - Monte Carlo simulation
 % 
-% Description: performing Monte Carlo simulation on the system
+% Description: perform a Monte Carlo simulation on the system for
+% different transmit powers.
+% -------------------------------------------------------------------------
 
 function mc = monte_carlo(binary_input,link,modulation,transmitter,receiver,constants)
     % setup----------------------------------------------------------------

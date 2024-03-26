@@ -5,8 +5,8 @@
 % ---------------------------------------------------------------------
 % section 4 - receiver side
 % 
-% Description: Filtering with fft, demodulation, thresholding and converting 
-% the demodulated binary message back to ascii.
+% Description: Filter with fft, demodulation and thresholding 
+% -------------------------------------------------------------------------
 
 function binary_output=demodulator(demodulation,through_channel_noisy,av_received_power,av_transmitted_power)
     switch demodulation

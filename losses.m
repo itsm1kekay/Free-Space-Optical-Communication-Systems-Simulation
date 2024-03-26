@@ -6,7 +6,9 @@
 % -------------------------------------------------------------------------
 % section 3.1 - losses in channel
 % 
-% Description: calculate the losses in the channel for the given parameters
+% Description: calculate the losses in the channel for the proposed system
+% design.
+% -------------------------------------------------------------------------
 
 function [total_losses,rytov] = losses(link,LEO_distance,transmitter,receiver)
     atm_conditions=link.atm_conditions;
@@ -20,7 +22,7 @@ function [total_losses,rytov] = losses(link,LEO_distance,transmitter,receiver)
             [GML,PE]=GML_and_PE_losses(transmitter,link,receiver,transmitter.misalignment(1),transmitter.misalignment(2),cn2);
         case "Ground only"
             scattering_coefficient=scattering(atm_conditions,"KIM",wavelength);             
-            [scint,rytov,cn2]=scintillation("NME VI",link.length,wavelength,0); % scintillation model: New Model Equation 5
+            [scint,rytov,cn2]=scintillation("NME V",link.length,wavelength,0); % scintillation model: New Model Equation 5
             [GML,PE]=GML_and_PE_losses(transmitter,link,receiver,transmitter.misalignment(1),transmitter.misalignment(2),cn2);
             atm_atten=pow2db(db2pow(scattering_coefficient*link.length)+db2pow(scint));
         case "Ground via sat relay"
@@ -52,7 +54,7 @@ end
 % ------------------- Losses ------------------- %
 function [GML,PE]= GML_and_PE_losses(transmitter,link,receiver,deviation_x,deviation_y,cn2)
     % geometrical losses
-    beam_waist_at0=sqrt(2)*receiver.radius/pi;  
+    beam_waist_at0=sqrt(2)*transmitter.radius/pi;  
     theta_rad=transmitter.wavelength*1e3*pi/(pi*beam_waist_at0*180); 
     GML=10*log10(receiver.apperture/pi*(theta_rad*link.length*1e3)^2);
     % % pointing error losses
@@ -151,7 +153,7 @@ function [scint,rytov,cn2]=scintillation(scintillation_model,link_length,wavelen
             %     (3.02e-17)*exp(-(altitude*1e3)/1500)+(1.90e-15)*exp(-(altitude*1e3)/100);
             cn2 = (8.16e-54)*((altitude)^10)*exp(-(altitude)/1000)+...
                 (3.02e-17)*exp(-(altitude)/1500)+(1.90e-15)*exp(-(altitude)); % using km instead of m works!
-        case "NME VI"
+        case "NME V"
             
             cn2 = 1e-14*(5360.63+21.0442*Ws ...
                 -281.763*T-63.5576*RH-0.0431099*(Ws^2) ...

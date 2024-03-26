@@ -6,8 +6,7 @@
 % section 3 - channel
 % 
 % Description: Introduction to channel - noise and losses
-%
-% Note: Negative exponential distribution hasn't been added yet
+% -------------------------------------------------------------------------
 
 function [through_channel_noisy,snr_db, total_losses,av_received_power,distribution] = channel(modulated, ...
     link,transmitter,receiver,constants)

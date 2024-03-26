@@ -5,7 +5,9 @@
 % -------------------------------------------------------------------------
 % section 2 - transmitter side
 % 
-% Description: convert to binary and modulate to transmit
+% Description: modulate the binary input signal for transmission
+% -------------------------------------------------------------------------
+
 function [modulated, binary_input]= modulator(modulation, binary_input, carrier_frequency,av_transmitted_power,BR)
     square_wave = pulse_shaping(binary_input,BR);
     switch modulation
